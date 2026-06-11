@@ -9,3 +9,5 @@ tmp/
 *.exe
 duckpop
 duckpop.pid
+
+.env
