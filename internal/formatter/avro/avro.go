@@ -62,6 +62,9 @@ func nonConvert(v any) (any, error) {
 }
 
 func uint64ToDecimalBytes(v any) (any, error) {
+	if v == nil {
+		return nil, nil
+	}
 	n := v.(uint64)
 	buf := make([]byte, 9)                 // 9 bytes for precision 20
 	binary.BigEndian.PutUint64(buf[1:], n) // leading 0 for sign
@@ -69,6 +72,9 @@ func uint64ToDecimalBytes(v any) (any, error) {
 }
 
 func hugeIntToDecimalBytes(v any) (any, error) {
+	if v == nil {
+		return nil, nil
+	}
 	n := v.(*big.Int)
 	const numBytes = 17 // ceil(39 * log2(10) / 8)
 	buf := make([]byte, numBytes)
@@ -192,6 +198,10 @@ func (w *Writer) type2field(typ *sql.ColumnType) (*avro.Field, convertFunc, erro
 
 	default:
 		return nil, nil, fmt.Errorf("unknown database type: %s", dbType)
+	}
+	avroType, err := avro.NewUnionSchema([]avro.Schema{avro.NewNullSchema(), avroType})
+	if err != nil {
+		return nil, nil, err
 	}
 	f, err := avro.NewField(typ.Name(), avroType)
 	if err != nil {
