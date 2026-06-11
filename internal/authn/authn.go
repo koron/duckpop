@@ -104,6 +104,29 @@ func (e *Entry) headerValue() string {
 	return ""
 }
 
+func (e *Entry) validate() error {
+	switch e.Type {
+	case Basic:
+		if e.User == nil {
+			return errors.New("required \"user\" property for \"basic\" type")
+		}
+		if e.User.Name == "" {
+			return errors.New("required \"user.name\" property for \"basic\" type")
+		}
+		if e.User.Password == "" {
+			return errors.New("required \"user.password\" property for \"basic\" type")
+		}
+	case Bearer:
+		if e.Token == nil {
+			return errors.New("required \"token\" property for \"bearer\" type")
+		}
+		if *e.Token == "" {
+			return errors.New("required non-empty \"token\" for \"bearer\" type")
+		}
+	}
+	return nil
+}
+
 var (
 	Default *Authenticator
 )
@@ -147,12 +170,10 @@ func readAuthenticator(r io.Reader) (*Authenticator, error) {
 			return nil, fmt.Errorf("duplicated ID: %s", e.ID)
 		}
 		idmap[e.ID] = struct{}{}
-		// 2. Check the type.
-		if e.Type == Basic && e.User == nil {
-			return nil, errors.New("required \"user\" property for \"basic\" type")
-		}
-		if e.Type == Bearer && e.Token == nil {
-			return nil, errors.New("required \"token\" property for \"bearer\" type")
+		// 2. Check the type and validate required fields.
+		err := e.validate()
+		if err != nil {
+			return nil, err
 		}
 		// 3. Create a reverse lookup index.
 		x := e.headerValue()
