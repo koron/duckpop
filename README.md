@@ -561,3 +561,45 @@ CREATE SECRET my_secret (
 以後すべての TCP 接続において共有されます。
 
 利用可能なシークレットは `FROM duckdb_secrets()` で確認できます。
+
+### Windows でのビルド
+
+MSYS2のUCRT64のgccが15.2から16.1に変更になった関係で、
+duckdb/duckdb-go-bindings に付属のコンパイル済みスタティックライブラリが
+gcc 16.1 では正常にリンクできない。
+
+そのため自前で duckdb/duckdb をビルドした上で、以下のようなコンパイルオプション
+が必要になる。
+
+```console
+$ CGO_ENABLED=1 \
+  CPPFLAGS="-DDUCKDB_STATIC_BUILD" \
+  CGO_LDFLAGS="-lduckdb_bundle -lws2_32 -lwsock32 -lrstrtmgr -lstdc++ -lm --static -L../duckdb/build/release" \
+  go build -tags=duckdb_use_static_lib
+```
+
+テストも同様で、実行方法は以下のようになる。
+
+```
+$ CGO_ENABLED=1 \
+  CPPFLAGS="-DDUCKDB_STATIC_BUILD" \
+  CGO_LDFLAGS="-lduckdb_bundle -lws2_32 -lwsock32 -lrstrtmgr -lstdc++ -lm --static -L../duckdb/build/release" \
+  go test -tags=duckdb_use_static_lib ./...
+```
+
+#### DuckDB のスタティックライブラリのビルド方法
+
+```sh
+cmake -B build/release \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_UNITTESTS=OFF \
+  -DBUILD_SHELL=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DEXTENSION_STATIC_BUILD=1 \
+  -DBUILD_EXTENSIONS="icu;json;parquet;autocomplete;core_functions;tpcds;tpch" \
+  -G "Ninja"
+
+cmake --build build/release --config Release
+
+make bundle-library-obj
+```
