@@ -52,8 +52,9 @@ type Config struct {
 	EnableDebugLog bool
 	EnablePprof    bool
 
-	Address string
-	MaxDB   int
+	Address     string
+	MaxBodySize int64
+	MaxDB       int
 
 	PIDFile         string
 	AccessLogFile   string
@@ -85,6 +86,7 @@ func DefaultConfig() Config {
 	return Config{
 		Address:          "localhost:9281",
 		MaxDB:            20,
+		MaxBodySize:      1 << 20, // 1 MiB
 		AccessLogFormat:  "text",
 		DBHomeDir:        filepath.Join(getwd(), ".duckpop"),
 		DBThreads:        1,
@@ -480,8 +482,13 @@ func (srv *Server) handleQuery(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "GET" && r.Method != "POST" {
 		return httperror.New(404)
 	}
+	r.Body = http.MaxBytesReader(w, r.Body, srv.config.MaxBodySize)
 	query, err := readQuery(r)
 	if err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			return nil // http.MaxBytesReader already wrote 413 response
+		}
 		return httperror.Newf(400, "No queries: %s", err)
 	}
 
