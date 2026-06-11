@@ -204,20 +204,23 @@ func parseLogFormat(s string) (logFormat, error) {
 }
 
 // Setup access logger
-func (srv *Server) setupAccessLogger() error {
+func (srv *Server) setupAccessLogger() (io.Closer, error) {
 	// Special setting to discard access logs during testing
 	if srv.accessLogFile == "test.discard" {
-		return nil
+		return nil, nil
 	}
 
-	var logw io.Writer = os.Stdout
+	var (
+		logw   io.Writer = os.Stdout
+		closer io.Closer
+	)
 	if srv.accessLogFile != "" {
 		w, err := hupfile.New(srv.accessLogFile)
 		if err != nil {
-			return fmt.Errorf("failed to open access log file: %w", err)
+			return nil, fmt.Errorf("failed to open access log file: %w", err)
 		}
 		logw = w
-		defer w.Close()
+		closer = w
 	}
 
 	switch srv.accessLogFormat {
@@ -226,9 +229,9 @@ func (srv *Server) setupAccessLogger() error {
 	case jsonLog:
 		srv.accessLogger = slog.New(slog.NewJSONHandler(logw, nil))
 	default:
-		return errors.New("invalid access log format")
+		return nil, errors.New("invalid access log format")
 	}
-	return nil
+	return closer, nil
 }
 
 func (srv *Server) Serve(ctx context.Context) error {
@@ -247,8 +250,12 @@ func (srv *Server) Serve(ctx context.Context) error {
 		defer pidfile.Close()
 	}
 
-	if err := srv.setupAccessLogger(); err != nil {
+	c, err := srv.setupAccessLogger()
+	if err != nil {
 		return err
+	}
+	if c != nil {
+		defer c.Close()
 	}
 
 	srvctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
