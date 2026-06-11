@@ -61,7 +61,7 @@ func writeLog(logger *slog.Logger, ww *wrapWriter, r *http.Request) {
 	}
 
 	// Request information: method, path, protocol version, referer,
-	// user-agent, stauts, response size
+	// user-agent, status, response size
 	attrs = append(attrs,
 		slog.String("method", r.Method),
 		slog.String("path", r.URL.RequestURI()),
