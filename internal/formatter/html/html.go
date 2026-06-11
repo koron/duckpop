@@ -1,4 +1,4 @@
-// Package html proivdes HTML formatter for Duckpop.
+// Package html provides HTML formatter for Duckpop.
 package html
 
 import (

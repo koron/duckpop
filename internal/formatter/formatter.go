@@ -1,4 +1,4 @@
-// Package formatter proivdes formatter framework for Duckpop.
+// Package formatter provides formatter framework for Duckpop.
 package formatter
 
 import (

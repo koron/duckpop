@@ -1,4 +1,4 @@
-// Package csv proivdes CSV formatter for Duckpop.
+// Package csv provides CSV formatter for Duckpop.
 package csv
 
 import (

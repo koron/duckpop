@@ -1,4 +1,4 @@
-// Package duckserver proivdes HTTP server of Duckpop.
+// Package duckserver provides HTTP server of Duckpop.
 package duckserver
 
 import (
@@ -52,8 +52,9 @@ type Config struct {
 	EnableDebugLog bool
 	EnablePprof    bool
 
-	Address string
-	MaxDB   int
+	Address     string
+	MaxBodySize int64
+	MaxDB       int
 
 	PIDFile         string
 	AccessLogFile   string
@@ -85,6 +86,7 @@ func DefaultConfig() Config {
 	return Config{
 		Address:          "localhost:9281",
 		MaxDB:            20,
+		MaxBodySize:      1 << 20, // 1 MiB
 		AccessLogFormat:  "text",
 		DBHomeDir:        filepath.Join(getwd(), ".duckpop"),
 		DBThreads:        1,
@@ -204,20 +206,23 @@ func parseLogFormat(s string) (logFormat, error) {
 }
 
 // Setup access logger
-func (srv *Server) setupAccessLogger() error {
+func (srv *Server) setupAccessLogger() (io.Closer, error) {
 	// Special setting to discard access logs during testing
 	if srv.accessLogFile == "test.discard" {
-		return nil
+		return nil, nil
 	}
 
-	var logw io.Writer = os.Stdout
+	var (
+		logw   io.Writer = os.Stdout
+		closer io.Closer
+	)
 	if srv.accessLogFile != "" {
 		w, err := hupfile.New(srv.accessLogFile)
 		if err != nil {
-			return fmt.Errorf("failed to open access log file: %w", err)
+			return nil, fmt.Errorf("failed to open access log file: %w", err)
 		}
 		logw = w
-		defer w.Close()
+		closer = w
 	}
 
 	switch srv.accessLogFormat {
@@ -226,9 +231,9 @@ func (srv *Server) setupAccessLogger() error {
 	case jsonLog:
 		srv.accessLogger = slog.New(slog.NewJSONHandler(logw, nil))
 	default:
-		return errors.New("invalid access log format")
+		return nil, errors.New("invalid access log format")
 	}
-	return nil
+	return closer, nil
 }
 
 func (srv *Server) Serve(ctx context.Context) error {
@@ -247,8 +252,12 @@ func (srv *Server) Serve(ctx context.Context) error {
 		defer pidfile.Close()
 	}
 
-	if err := srv.setupAccessLogger(); err != nil {
+	c, err := srv.setupAccessLogger()
+	if err != nil {
 		return err
+	}
+	if c != nil {
+		defer c.Close()
 	}
 
 	srvctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
@@ -473,8 +482,13 @@ func (srv *Server) handleQuery(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "GET" && r.Method != "POST" {
 		return httperror.New(404)
 	}
+	r.Body = http.MaxBytesReader(w, r.Body, srv.config.MaxBodySize)
 	query, err := readQuery(r)
 	if err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			return nil // http.MaxBytesReader already wrote 413 response
+		}
 		return httperror.Newf(400, "No queries: %s", err)
 	}
 

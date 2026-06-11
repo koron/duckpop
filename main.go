@@ -46,6 +46,7 @@ func flag2config(c *duckserver.Config) error {
 	flag.BoolVar(&c.EnableDebugLog, "debug", false, `enable debug log`)
 	flag.BoolVar(&c.EnablePprof, "pprof", false, `enable pprof end point`)
 	flag.StringVar(&c.Address, "addr", "localhost:9281", `address hosts HTTP server`)
+	flag.Int64Var(&c.MaxBodySize, "maxbodysize", 1<<20, `max request body size in bytes`)
 	flag.IntVar(&c.MaxDB, "maxdb", 20, `maximum number of DB instances`)
 	flag.StringVar(&c.PIDFile, "pidfile", "", `file to record the process ID`)
 	flag.StringVar(&c.AccessLogFile, "accesslog.file", "", `access log file (default: stdout)`)
