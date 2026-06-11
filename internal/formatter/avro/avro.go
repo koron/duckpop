@@ -3,8 +3,10 @@ package avro
 
 import (
 	"database/sql"
+	"encoding/binary"
 	"fmt"
 	"io"
+	"math/big"
 
 	"github.com/hamba/avro/v2"
 	"github.com/hamba/avro/v2/ocf"
@@ -59,6 +61,26 @@ func nonConvert(v any) (any, error) {
 	return v, nil
 }
 
+func uint64ToDecimalBytes(v any) (any, error) {
+	n := v.(uint64)
+	buf := make([]byte, 9)                 // 9 bytes for precision 20
+	binary.BigEndian.PutUint64(buf[1:], n) // leading 0 for sign
+	return buf, nil
+}
+
+func hugeIntToDecimalBytes(v any) (any, error) {
+	n := v.(*big.Int)
+	const numBytes = 17 // ceil(39 * log2(10) / 8)
+	buf := make([]byte, numBytes)
+	if n.Sign() < 0 {
+		twos := new(big.Int).Add(n, new(big.Int).Lsh(big.NewInt(1), uint(numBytes*8)))
+		twos.FillBytes(buf)
+	} else {
+		n.FillBytes(buf)
+	}
+	return buf, nil
+}
+
 func (w *Writer) type2field(typ *sql.ColumnType) (*avro.Field, convertFunc, error) {
 	var avroType avro.Schema
 	var convFn convertFunc = nonConvert
@@ -81,7 +103,8 @@ func (w *Writer) type2field(typ *sql.ColumnType) (*avro.Field, convertFunc, erro
 	case "UINTEGER":
 		avroType = avro.NewPrimitiveSchema(avro.Long, nil)
 	case "UBIGINT":
-		avroType = avro.NewPrimitiveSchema(avro.Fixed, nil)
+		avroType = avro.NewPrimitiveSchema(avro.Fixed, avro.NewDecimalLogicalSchema(20, 0))
+		convFn = uint64ToDecimalBytes
 
 	case "FLOAT":
 		avroType = avro.NewPrimitiveSchema(avro.Float, nil)
@@ -89,11 +112,12 @@ func (w *Writer) type2field(typ *sql.ColumnType) (*avro.Field, convertFunc, erro
 		avroType = avro.NewPrimitiveSchema(avro.Double, nil)
 
 	case "HUGEINT":
-		// FIXME:
-		avroType = avro.NewPrimitiveSchema(avro.Fixed, avro.NewPrimitiveLogicalSchema(avro.Decimal))
+		avroType = avro.NewPrimitiveSchema(avro.Fixed, avro.NewDecimalLogicalSchema(39, 0))
+		convFn = hugeIntToDecimalBytes
 	case "UHUGEINT":
-		// FIXME:
-		avroType = avro.NewPrimitiveSchema(avro.Fixed, avro.NewPrimitiveLogicalSchema(avro.Decimal))
+		avroType = avro.NewPrimitiveSchema(avro.Fixed, avro.NewDecimalLogicalSchema(39, 0))
+		convFn = hugeIntToDecimalBytes
+
 	case "DECIMAL":
 		// FIXME:
 		avroType = avro.NewPrimitiveSchema(avro.Bytes, avro.NewPrimitiveLogicalSchema(avro.Decimal))
