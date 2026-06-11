@@ -1,4 +1,4 @@
-// Package table proivdes plain text table formatter for Duckpop.
+// Package table provides plain text table formatter for Duckpop.
 package table
 
 import (

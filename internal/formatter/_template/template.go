@@ -1,4 +1,4 @@
-// Package {{.packageName}} proivdes {{.name}} formatter for Duckpop.
+// Package {{.packageName}} provides {{.name}} formatter for Duckpop.
 package {{.packageName}}
 
 import (

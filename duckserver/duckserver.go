@@ -1,4 +1,4 @@
-// Package duckserver proivdes HTTP server of Duckpop.
+// Package duckserver provides HTTP server of Duckpop.
 package duckserver
 
 import (

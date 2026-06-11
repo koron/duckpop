@@ -1,4 +1,4 @@
-// Package avro proivdes Apache Avro formatter for Duckpop.
+// Package avro provides Apache Avro formatter for Duckpop.
 package avro
 
 import (

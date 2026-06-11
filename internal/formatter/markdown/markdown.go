@@ -1,4 +1,4 @@
-// Package markdown proivdes Markdown formatter for Duckpop.
+// Package markdown provides Markdown formatter for Duckpop.
 package markdown
 
 import (
