@@ -30,7 +30,7 @@ const (
 	versionQuery = "SELECT version() AS V"
 	versionWant  = "V\n" + duckDBVersion + "\n"
 
-	idSyntaxError = "ID syntax error: query ID should starts with \"Q_\"\n"
+	idSyntaxError = "ID syntax error: query ID should start with \"Q_\"\n"
 )
 
 type testServer struct {

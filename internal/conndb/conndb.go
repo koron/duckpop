@@ -108,7 +108,7 @@ func (m *Manager) closeConn(c net.Conn) error {
 }
 
 var (
-	ErrNoID         = errors.New("no IDs assigned for the context")
+	ErrNoID         = errors.New("no ID assigned for the context")
 	ErrNoConnection = errors.New("no connections assigned for the context")
 	ErrMaxDB        = errors.New("reached maximum number of DB")
 	ErrNoOpener     = errors.New("no Opener specified")
@@ -194,8 +194,8 @@ type Client struct {
 	conn *sql.Conn
 }
 
-func (clinet *Client) Context() context.Context {
-	return clinet.ctx
+func (client *Client) Context() context.Context {
+	return client.ctx
 }
 
 func (client *Client) Conn() (*sql.Conn, error) {

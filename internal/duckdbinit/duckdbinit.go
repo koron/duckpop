@@ -1,4 +1,4 @@
-// Package duckdbinit provides initializer for DuckDB instance.
+// Package duckdbinit provides an initializer for DuckDB instance.
 package duckdbinit
 
 import (

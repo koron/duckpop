@@ -130,7 +130,7 @@ type Server struct {
 func New(c Config) (*Server, error) {
 	homedir, err := filepath.Abs(c.DBHomeDir)
 	if err != nil {
-		return nil, fmt.Errorf("failed to detemine DBHomeDir: %w", err)
+		return nil, fmt.Errorf("failed to determine DBHomeDir: %w", err)
 	}
 
 	srv := Server{
@@ -237,7 +237,7 @@ func (srv *Server) setupAccessLogger() (io.Closer, error) {
 }
 
 func (srv *Server) Serve(ctx context.Context) error {
-	// Preparement: check database configuration.
+	// Preparation: check database configuration.
 	err := srv.checkDB(ctx)
 	if err != nil {
 		return err
@@ -499,7 +499,7 @@ func (srv *Server) handleQuery(w http.ResponseWriter, r *http.Request) error {
 		return httperror.Newf(400, "Unsupported format: %s", err)
 	}
 
-	// Determine a database connection which associated with the requenst.
+	// Determine a database connection which is associated with the request.
 	client, err := srv.connManager.Client(r.Context())
 	if err != nil {
 		return httperror.Newf(500, "No associated DB: %s", err)
