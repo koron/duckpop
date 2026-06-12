@@ -4,7 +4,6 @@ package fileserver
 
 import (
 	"net/http"
-	"os"
 
 	"golang.org/x/net/webdav"
 )
@@ -18,7 +17,7 @@ type Server struct {
 func New(dir string) *Server {
 	return &Server{
 		dir:    dir,
-		normal: http.FileServerFS(os.DirFS(dir)),
+		normal: newListDirHandler(dir),
 		webdav: &webdav.Handler{
 			FileSystem: webdav.Dir(dir),
 			LockSystem: webdav.NewMemLS(),
