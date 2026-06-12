@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+<head>
+<meta charset="UTF-8">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="/ui/lib/default.css">
+<style>
+  td.size { text-align: right; }
+  button.del { cursor: pointer; }
+</style>
+<title>Index of {{.Path}}</title>
+</head>
+
+<body>
+<h1>Index of {{.Path}}</h1>
+<table>
+  <thead><tr><th>Name</th><th>Size</th><th>Actions</th></tr></thead>
+  <tbody>
+    {{range .Items}}<tr>
+      <td><a href="{{.Name}}">{{.Name}}</a></td>
+      <td class="size">{{.Size}}</td>
+      <td>{{if ne .Name "../"}}<button class="del" data-name="{{.Name}}">Delete</button>{{else}}&nbsp;{{end}}</td>
+    </tr>{{end}}
+  </tbody>
+</table>
+<script>
+document.querySelectorAll('button.del').forEach(function(btn) {
+  btn.addEventListener('click', async function() {
+    var name = btn.dataset.name;
+    if (!confirm('Delete "' + name + '"?')) return;
+    try {
+      var r = await fetch(name, {method: 'DELETE'});
+      if (r.ok) location.reload();
+      else alert('Failed to delete: HTTP ' + r.status);
+    } catch(e) {
+      alert('Error: ' + e.message);
+    }
+  });
+});
+</script>
+</body>
