@@ -1,4 +1,4 @@
-// Package querydb provides databsse for queries.
+// Package querydb provides database for queries.
 package querydb
 
 import (
@@ -27,7 +27,7 @@ func (id ID) String() string {
 
 func ParseID(s string) (ID, error) {
 	if !strings.HasPrefix(s, "Q_") {
-		return 0, errors.New("query ID should starts with \"Q_\"")
+		return 0, errors.New("query ID should start with \"Q_\"")
 	}
 	n, err := strconv.ParseUint(s[2:], 16, 32)
 	if err != nil {
