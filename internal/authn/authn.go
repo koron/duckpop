@@ -35,7 +35,7 @@ func extractEntry(a *Authenticator, r *http.Request) *Entry {
 
 type entryKey struct{}
 
-// WinEntry creates and returns a context.Context to which the Entry is bound.
+// withEntry creates and returns a context.Context to which the Entry is bound.
 func withEntry(ctx context.Context, entry *Entry) context.Context {
 	return context.WithValue(ctx, entryKey{}, entry)
 }
