@@ -40,8 +40,15 @@ kbd {
   padding: 2px 6px;
 }
 
+#query {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 15px;
+}
+
 #output {
-  font-family: Consolas, monospace;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 15px;
+
   white-space: pre;
   overflow-x: auto;
 
