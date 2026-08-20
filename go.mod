@@ -9,7 +9,7 @@ require (
 	github.com/koron-go/ctxsrv v1.0.2
 	github.com/koron-go/daemonic v0.0.1
 	github.com/olekukonko/tablewriter v1.1.4
-	golang.org/x/net v0.57.0
+	golang.org/x/net v0.58.0
 )
 
 require (
