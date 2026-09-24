@@ -8,7 +8,7 @@ require (
 	github.com/hamba/avro/v2 v2.31.0
 	github.com/koron-go/ctxsrv v1.0.2
 	github.com/koron-go/daemonic v0.0.1
-	github.com/olekukonko/tablewriter v1.1.4
+	github.com/olekukonko/tablewriter v1.1.5
 	golang.org/x/net v0.59.0
 )
 
