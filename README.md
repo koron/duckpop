@@ -582,38 +582,12 @@ MSYS2のUCRT64のgccが15.2から16.1に変更された関係上、
 duckdb/duckdb-go-bindings に付属のコンパイル済みスタティックライブラリが
 gcc 16.1 では正常にリンクできない。
 
-そのため自前で duckdb/duckdb をビルドした上で、以下のようなコンパイルオプション
-が必要になる。
+そのため Windows でビルドするには準備として、
+duckdb/duckdb の[最新リリース](https://github.com/duckdb/duckdb/releases/latest)から
+`duckdb-shared-libs-windows-amd64.tar.gz` をダウンロードし、
+`./_lib/duckdb-shared-libs-windows-amd64` として展開すること。
 
-```console
-$ CGO_ENABLED=1 \
-  CPPFLAGS="-DDUCKDB_STATIC_BUILD" \
-  CGO_LDFLAGS="-lduckdb_bundle -lws2_32 -lwsock32 -lrstrtmgr -lstdc++ -lm --static -L../duckdb/build/release" \
-  go build -tags=duckdb_use_static_lib
-```
+その上で MSYS2 の bash 上で `source ./setup-windows.sh` してから、
+`make` もしくは `go build` する。
 
-テストも同様で、実行方法は以下のようになる。
-
-```
-$ CGO_ENABLED=1 \
-  CPPFLAGS="-DDUCKDB_STATIC_BUILD" \
-  CGO_LDFLAGS="-lduckdb_bundle -lws2_32 -lwsock32 -lrstrtmgr -lstdc++ -lm --static -L../duckdb/build/release" \
-  go test -tags=duckdb_use_static_lib ./...
-```
-
-#### DuckDB のスタティックライブラリのビルド方法
-
-```sh
-cmake -B build/release \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DBUILD_UNITTESTS=OFF \
-  -DBUILD_SHELL=OFF \
-  -DBUILD_SHARED_LIBS=OFF \
-  -DEXTENSION_STATIC_BUILD=1 \
-  -DBUILD_EXTENSIONS="icu;json;parquet;autocomplete;core_functions;tpcds;tpch" \
-  -G "Ninja"
-
-cmake --build build/release --config Release
-
-make bundle-library-obj
-```
+テストも同様で `make test` もしくは `go test ./...` する。
