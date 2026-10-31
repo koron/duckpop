@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	duckDBVersion = "v1.5.6"
+	duckDBVersion = "v2.0.0"
 
 	versionQuery = "SELECT version() AS V"
 	versionWant  = "V\n" + duckDBVersion + "\n"

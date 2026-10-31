@@ -63,7 +63,7 @@ func TestLockConfig(t *testing.T) {
 
 		// Verify that changes cannot be made after initQueries.
 		_, err = conn.ExecContext(ctx, "SET threads = 8")
-		assert.Equal(t, `Invalid Input Error: Cannot change configuration option "threads" - the configuration has been locked`, err.Error())
+		assert.Equal(t, `Invalid Input Error: Cannot change configuration option ""threads"" - the configuration has been locked`, err.Error())
 	})
 
 	t.Run("false", func(t *testing.T) {
